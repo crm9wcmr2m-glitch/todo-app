@@ -17,22 +17,136 @@
       padding: 40px 16px;
     }
 
-    .container {
+    /* ── AUTH CARD ── */
+    .auth-card {
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.10);
       width: 100%;
-      max-width: 480px;
+      max-width: 420px;
+      padding: 36px 32px;
+    }
+
+    .auth-card h1 {
+      font-size: 1.6rem;
+      color: #1a1a2e;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .auth-card .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.88rem;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus { border-color: #6c63ff; }
+
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #6c63ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 6px;
+    }
+
+    .btn-primary:hover { background: #574fd6; }
+    .btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+    .switch-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.88rem;
+      color: #64748b;
+    }
+
+    .switch-link a {
+      color: #6c63ff;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .switch-link a:hover { text-decoration: underline; }
+
+    /* ── TODO APP ── */
+    .app-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      width: 100%;
+      max-width: 500px;
       padding: 32px;
     }
 
-    h1 {
-      font-size: 1.8rem;
-      color: #1a1a2e;
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 24px;
-      text-align: center;
-      letter-spacing: -0.5px;
     }
+
+    .app-header h1 { font-size: 1.6rem; color: #1a1a2e; }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-badge {
+      background: #ede9ff;
+      color: #6c63ff;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      background: none;
+      border: 2px solid #e2e8f0;
+      color: #94a3b8;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .logout-btn:hover { border-color: #ef4444; color: #ef4444; }
 
     .input-row {
       display: flex;
@@ -177,7 +291,7 @@
 
     .cancel-btn:hover { border-color: #94a3b8; }
 
-    .footer {
+    .todo-footer {
       margin-top: 20px;
       display: flex;
       justify-content: space-between;
@@ -197,46 +311,125 @@
 
     .clear-btn:hover { color: #ef4444; }
 
-    .empty {
+    /* ── SHARED ── */
+    .msg {
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .msg.error   { background: #fef2f2; color: #ef4444; }
+    .msg.success { background: #f0fdf4; color: #16a34a; }
+
+    .empty, .loading {
       text-align: center;
       color: #cbd5e1;
       padding: 32px 0;
       font-size: 0.95rem;
     }
 
-    .loading {
-      text-align: center;
-      color: #a5b4fc;
-      padding: 32px 0;
-      font-size: 0.95rem;
-    }
-
-    .error-msg {
-      background: #fef2f2;
-      color: #ef4444;
+    .id-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
       border-radius: 8px;
       padding: 10px 14px;
-      font-size: 0.85rem;
-      margin-bottom: 12px;
-      display: none;
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 16px;
+      word-break: break-all;
     }
+
+    .id-box strong { color: #1e293b; }
+
+    [data-view] { display: none; }
+    [data-view].active { display: block; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Yapılacaklar</h1>
+
+  <!-- LOGIN -->
+  <div data-view="login" class="auth-card">
+    <h1>Hoş Geldiniz</h1>
+    <p class="subtitle">Hesabınıza giriş yapın</p>
+    <div id="login-msg" class="msg"></div>
+    <div class="form-group">
+      <label>E-posta</label>
+      <input type="email" id="login-email" placeholder="ornek@mail.com">
+    </div>
+    <div class="form-group">
+      <label>Şifre</label>
+      <input type="password" id="login-password" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') login()">
+    </div>
+    <button class="btn-primary" onclick="login()">Giriş Yap</button>
+    <p class="switch-link">Hesabın yok mu? <a onclick="showView('register')">Kayıt Ol</a></p>
+  </div>
+
+  <!-- REGISTER -->
+  <div data-view="register" class="auth-card">
+    <h1>Hesap Oluştur</h1>
+    <p class="subtitle">Bilgilerinizi doldurun</p>
+    <div id="register-msg" class="msg"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ad</label>
+        <input type="text" id="reg-first" placeholder="Adınız">
+      </div>
+      <div class="form-group">
+        <label>Soyad</label>
+        <input type="text" id="reg-last" placeholder="Soyadınız">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>E-posta</label>
+      <input type="email" id="reg-email" placeholder="ornek@mail.com">
+    </div>
+    <div class="form-group">
+      <label>Şifre <span style="font-weight:400;color:#94a3b8">(min. 6 karakter)</span></label>
+      <input type="password" id="reg-password" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') register()">
+    </div>
+    <button class="btn-primary" onclick="register()">Kayıt Ol</button>
+    <p class="switch-link">Zaten hesabın var mı? <a onclick="showView('login')">Giriş Yap</a></p>
+  </div>
+
+  <!-- SUCCESS AFTER REGISTER -->
+  <div data-view="registered" class="auth-card">
+    <h1>Kayıt Başarılı!</h1>
+    <p class="subtitle">Hesabınız oluşturuldu</p>
+    <div class="id-box">
+      Kullanıcı ID'niz:<br>
+      <strong id="new-user-id"></strong>
+    </div>
+    <p style="font-size:0.88rem;color:#64748b;margin-bottom:20px;text-align:center">
+      Bu ID ile hesabınızı tanımlayabilirsiniz.
+    </p>
+    <button class="btn-primary" onclick="showView('login')">Giriş Yap</button>
+  </div>
+
+  <!-- APP -->
+  <div data-view="app" class="app-card">
+    <div class="app-header">
+      <h1>Yapılacaklar</h1>
+      <div class="user-info">
+        <span class="user-badge" id="user-badge"></span>
+        <button class="logout-btn" onclick="logout()">Çıkış</button>
+      </div>
+    </div>
     <div class="input-row">
       <input type="text" id="todo-input" placeholder="Yeni görev ekle..." maxlength="200">
       <button onclick="addTodo()">Ekle</button>
     </div>
-    <div id="error-msg" class="error-msg"></div>
+    <div id="app-msg" class="msg"></div>
     <div class="filters">
       <button class="active" onclick="setFilter('all', this)">Tümü</button>
       <button onclick="setFilter('active', this)">Bekleyen</button>
       <button onclick="setFilter('done', this)">Tamamlanan</button>
     </div>
     <ul id="todo-list"><li class="loading">Yükleniyor...</li></ul>
-    <div class="footer">
+    <div class="todo-footer">
       <span id="count-label"></span>
       <button class="clear-btn" onclick="clearDone()">Tamamlananları sil</button>
     </div>
@@ -244,41 +437,159 @@
 
   <script>
     const SUPABASE_URL = 'https://zvtisyltheuycvjffdis.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2dGlzeWx0aGV1eWN2amZmZGlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDkwODAsImV4cCI6MjA5MjI4NTA4MH0.reaEcUeRKU-HnbKdM7VtuosHT7xjjpercf6MTOTmTrM';
-    const HEADERS = {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Prefer': 'return=representation'
-    };
+    const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2dGlzeWx0aGV1eWN2amZmZGlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDkwODAsImV4cCI6MjA5MjI4NTA4MH0.reaEcUeRKU-HnbKdM7VtuosHT7xjjpercf6MTOTmTrM';
 
+    let session = JSON.parse(localStorage.getItem('session') || 'null');
     let todos = [];
     let filter = 'all';
 
-    function api(path, options = {}) {
-      return fetch(`${SUPABASE_URL}/rest/v1${path}`, {
-        ...options,
-        headers: { ...HEADERS, ...options.headers }
-      }).then(async r => {
-        if (!r.ok) throw new Error(await r.text());
-        const text = await r.text();
-        return text ? JSON.parse(text) : null;
-      });
+    // ── HELPERS ──────────────────────────────────────────────
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${session ? session.access_token : ANON_KEY}`
+      };
     }
 
-    function showError(msg) {
-      const el = document.getElementById('error-msg');
-      el.textContent = msg;
+    async function authApi(path, options = {}) {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1${path}`, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, ...options.headers }
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error_description || data.msg || JSON.stringify(data));
+      return data;
+    }
+
+    async function dbApi(path, options = {}) {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
+        ...options,
+        headers: { ...authHeaders(), 'Prefer': 'return=representation', ...options.headers }
+      });
+      if (!r.ok) { const t = await r.text(); throw new Error(t); }
+      const text = await r.text();
+      return text ? JSON.parse(text) : null;
+    }
+
+    function showView(name) {
+      document.querySelectorAll('[data-view]').forEach(el => el.classList.remove('active'));
+      document.querySelector(`[data-view="${name}"]`).classList.add('active');
+    }
+
+    function showMsg(id, text, type = 'error') {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `msg ${type}`;
       el.style.display = 'block';
-      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    function hideMsg(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function setLoading(btnSelector, loading) {
+      const btn = document.querySelector(btnSelector);
+      btn.disabled = loading;
+      btn.textContent = loading ? 'Bekleyin...' : btn.dataset.label;
+    }
+
+    // ── AUTH ─────────────────────────────────────────────────
+    async function register() {
+      hideMsg('register-msg');
+      const first = document.getElementById('reg-first').value.trim();
+      const last  = document.getElementById('reg-last').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass  = document.getElementById('reg-password').value;
+
+      if (!first || !last) return showMsg('register-msg', 'Ad ve soyad alanları zorunludur.');
+      if (!email)          return showMsg('register-msg', 'E-posta adresi zorunludur.');
+      if (pass.length < 6) return showMsg('register-msg', 'Şifre en az 6 karakter olmalıdır.');
+
+      const btn = document.querySelector('[data-view="register"] .btn-primary');
+      btn.disabled = true; btn.textContent = 'Kayıt yapılıyor...';
+
+      try {
+        const data = await authApi('/signup', {
+          method: 'POST',
+          body: JSON.stringify({ email, password: pass })
+        });
+
+        const userId = data.user?.id || data.id;
+
+        // Save profile
+        await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Prefer': 'return=minimal',
+            'Authorization': `Bearer ${data.access_token || ANON_KEY}` },
+          body: JSON.stringify({ id: userId, first_name: first, last_name: last, email })
+        });
+
+        document.getElementById('new-user-id').textContent = userId;
+        showView('registered');
+      } catch (e) {
+        showMsg('register-msg', e.message);
+      } finally {
+        btn.disabled = false; btn.textContent = 'Kayıt Ol';
+      }
+    }
+
+    async function login() {
+      hideMsg('login-msg');
+      const email = document.getElementById('login-email').value.trim();
+      const pass  = document.getElementById('login-password').value;
+      if (!email || !pass) return showMsg('login-msg', 'E-posta ve şifre zorunludur.');
+
+      const btn = document.querySelector('[data-view="login"] .btn-primary');
+      btn.disabled = true; btn.textContent = 'Giriş yapılıyor...';
+
+      try {
+        const data = await authApi('/token?grant_type=password', {
+          method: 'POST',
+          body: JSON.stringify({ email, password: pass })
+        });
+        session = { access_token: data.access_token, user: data.user };
+        localStorage.setItem('session', JSON.stringify(session));
+        await initApp();
+      } catch (e) {
+        showMsg('login-msg', 'E-posta veya şifre hatalı.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Giriş Yap';
+      }
+    }
+
+    async function logout() {
+      try { await authApi('/logout', { method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` } }); } catch (_) {}
+      session = null;
+      localStorage.removeItem('session');
+      todos = [];
+      showView('login');
+    }
+
+    // ── APP ──────────────────────────────────────────────────
+    async function initApp() {
+      let profile = null;
+      try {
+        const rows = await dbApi('/profiles?id=eq.' + session.user.id);
+        profile = rows && rows[0];
+      } catch (_) {}
+
+      const name = profile
+        ? `${profile.first_name} ${profile.last_name}`
+        : session.user.email;
+
+      document.getElementById('user-badge').textContent = name;
+      showView('app');
+      await loadTodos();
     }
 
     async function loadTodos() {
       try {
-        todos = await api('/todos?order=created_at.asc');
+        todos = await dbApi('/todos?user_id=eq.' + session.user.id + '&order=created_at.asc');
         render();
       } catch (e) {
-        showError('Veriler yüklenemedi: ' + e.message);
+        showMsg('app-msg', 'Veriler yüklenemedi: ' + e.message);
       }
     }
 
@@ -313,8 +624,8 @@
       document.getElementById('count-label').textContent = `${remaining} görev bekliyor`;
     }
 
-    function escHtml(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     async function addTodo() {
@@ -323,38 +634,30 @@
       if (!text) return;
       input.value = '';
       try {
-        const [row] = await api('/todos', {
+        const [row] = await dbApi('/todos', {
           method: 'POST',
-          body: JSON.stringify({ text, done: false })
+          body: JSON.stringify({ text, done: false, user_id: session.user.id })
         });
         todos.push(row);
         render();
       } catch (e) {
-        showError('Görev eklenemedi: ' + e.message);
-        input.value = text;
+        showMsg('app-msg', 'Görev eklenemedi.'); input.value = text;
       }
     }
 
     async function toggle(id) {
       const t = todos.find(t => t.id === id);
       if (!t) return;
-      const newDone = !t.done;
-      t.done = newDone;
-      render();
+      t.done = !t.done; render();
       try {
-        await api(`/todos?id=eq.${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ done: newDone })
-        });
+        await dbApi(`/todos?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ done: t.done }) });
       } catch (e) {
-        t.done = !newDone;
-        render();
-        showError('Güncellenemedi: ' + e.message);
+        t.done = !t.done; render(); showMsg('app-msg', 'Güncellenemedi.');
       }
     }
 
     function startEdit(id) {
-      todos.forEach(t => { if (t.editing) t.editing = false; });
+      todos.forEach(t => { t.editing = false; });
       const t = todos.find(t => t.id === id);
       if (t) t.editing = true;
       render();
@@ -364,22 +667,15 @@
 
     async function saveEdit(id) {
       const el = document.getElementById('edit-' + id);
-      const text = el ? el.value.trim() : '';
+      const text = el?.value.trim();
       if (!text) return;
       const t = todos.find(t => t.id === id);
-      const oldText = t.text;
-      t.text = text;
-      t.editing = false;
-      render();
+      const old = t.text;
+      t.text = text; t.editing = false; render();
       try {
-        await api(`/todos?id=eq.${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ text })
-        });
+        await dbApi(`/todos?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ text }) });
       } catch (e) {
-        t.text = oldText;
-        render();
-        showError('Düzenlenemedi: ' + e.message);
+        t.text = old; render(); showMsg('app-msg', 'Düzenlenemedi.');
       }
     }
 
@@ -395,26 +691,22 @@
     }
 
     async function remove(id) {
-      todos = todos.filter(t => t.id !== id);
-      render();
+      todos = todos.filter(t => t.id !== id); render();
       try {
-        await api(`/todos?id=eq.${id}`, { method: 'DELETE' });
+        await dbApi(`/todos?id=eq.${id}`, { method: 'DELETE' });
       } catch (e) {
-        showError('Silinemedi: ' + e.message);
-        loadTodos();
+        showMsg('app-msg', 'Silinemedi.'); loadTodos();
       }
     }
 
     async function clearDone() {
-      const doneIds = todos.filter(t => t.done).map(t => t.id);
-      if (!doneIds.length) return;
-      todos = todos.filter(t => !t.done);
-      render();
+      const ids = todos.filter(t => t.done).map(t => t.id);
+      if (!ids.length) return;
+      todos = todos.filter(t => !t.done); render();
       try {
-        await api(`/todos?id=in.(${doneIds.join(',')})`, { method: 'DELETE' });
+        await dbApi(`/todos?id=in.(${ids.join(',')})`, { method: 'DELETE' });
       } catch (e) {
-        showError('Silinemedi: ' + e.message);
-        loadTodos();
+        showMsg('app-msg', 'Silinemedi.'); loadTodos();
       }
     }
 
@@ -429,7 +721,12 @@
       if (e.key === 'Enter') addTodo();
     });
 
-    loadTodos();
+    // ── INIT ─────────────────────────────────────────────────
+    if (session?.access_token) {
+      initApp().catch(() => { session = null; localStorage.removeItem('session'); showView('login'); });
+    } else {
+      showView('login');
+    }
   </script>
 </body>
 </html>
