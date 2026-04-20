@@ -203,6 +203,23 @@
       padding: 32px 0;
       font-size: 0.95rem;
     }
+
+    .loading {
+      text-align: center;
+      color: #a5b4fc;
+      padding: 32px 0;
+      font-size: 0.95rem;
+    }
+
+    .error-msg {
+      background: #fef2f2;
+      color: #ef4444;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -212,12 +229,13 @@
       <input type="text" id="todo-input" placeholder="Yeni görev ekle..." maxlength="200">
       <button onclick="addTodo()">Ekle</button>
     </div>
+    <div id="error-msg" class="error-msg"></div>
     <div class="filters">
       <button class="active" onclick="setFilter('all', this)">Tümü</button>
       <button onclick="setFilter('active', this)">Bekleyen</button>
       <button onclick="setFilter('done', this)">Tamamlanan</button>
     </div>
-    <ul id="todo-list"></ul>
+    <ul id="todo-list"><li class="loading">Yükleniyor...</li></ul>
     <div class="footer">
       <span id="count-label"></span>
       <button class="clear-btn" onclick="clearDone()">Tamamlananları sil</button>
@@ -225,11 +243,43 @@
   </div>
 
   <script>
-    let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    const SUPABASE_URL = 'https://zvtisyltheuycvjffdis.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2dGlzeWx0aGV1eWN2amZmZGlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDkwODAsImV4cCI6MjA5MjI4NTA4MH0.reaEcUeRKU-HnbKdM7VtuosHT7xjjpercf6MTOTmTrM';
+    const HEADERS = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer': 'return=representation'
+    };
+
+    let todos = [];
     let filter = 'all';
 
-    function save() {
-      localStorage.setItem('todos', JSON.stringify(todos));
+    function api(path, options = {}) {
+      return fetch(`${SUPABASE_URL}/rest/v1${path}`, {
+        ...options,
+        headers: { ...HEADERS, ...options.headers }
+      }).then(async r => {
+        if (!r.ok) throw new Error(await r.text());
+        const text = await r.text();
+        return text ? JSON.parse(text) : null;
+      });
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    async function loadTodos() {
+      try {
+        todos = await api('/todos?order=created_at.asc');
+        render();
+      } catch (e) {
+        showError('Veriler yüklenemedi: ' + e.message);
+      }
     }
 
     function render() {
@@ -260,29 +310,47 @@
       }
 
       const remaining = todos.filter(t => !t.done).length;
-      document.getElementById('count-label').textContent =
-        `${remaining} görev bekliyor`;
+      document.getElementById('count-label').textContent = `${remaining} görev bekliyor`;
     }
 
     function escHtml(str) {
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    function addTodo() {
+    async function addTodo() {
       const input = document.getElementById('todo-input');
       const text = input.value.trim();
       if (!text) return;
-      todos.push({ id: Date.now(), text, done: false });
       input.value = '';
-      save();
-      render();
+      try {
+        const [row] = await api('/todos', {
+          method: 'POST',
+          body: JSON.stringify({ text, done: false })
+        });
+        todos.push(row);
+        render();
+      } catch (e) {
+        showError('Görev eklenemedi: ' + e.message);
+        input.value = text;
+      }
     }
 
-    function toggle(id) {
+    async function toggle(id) {
       const t = todos.find(t => t.id === id);
-      if (t) t.done = !t.done;
-      save();
+      if (!t) return;
+      const newDone = !t.done;
+      t.done = newDone;
       render();
+      try {
+        await api(`/todos?id=eq.${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ done: newDone })
+        });
+      } catch (e) {
+        t.done = !newDone;
+        render();
+        showError('Güncellenemedi: ' + e.message);
+      }
     }
 
     function startEdit(id) {
@@ -294,14 +362,25 @@
       if (el) { el.focus(); el.select(); }
     }
 
-    function saveEdit(id) {
+    async function saveEdit(id) {
       const el = document.getElementById('edit-' + id);
       const text = el ? el.value.trim() : '';
       if (!text) return;
       const t = todos.find(t => t.id === id);
-      if (t) { t.text = text; t.editing = false; }
-      save();
+      const oldText = t.text;
+      t.text = text;
+      t.editing = false;
       render();
+      try {
+        await api(`/todos?id=eq.${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ text })
+        });
+      } catch (e) {
+        t.text = oldText;
+        render();
+        showError('Düzenlenemedi: ' + e.message);
+      }
     }
 
     function cancelEdit(id) {
@@ -315,16 +394,28 @@
       if (e.key === 'Escape') cancelEdit(id);
     }
 
-    function remove(id) {
+    async function remove(id) {
       todos = todos.filter(t => t.id !== id);
-      save();
       render();
+      try {
+        await api(`/todos?id=eq.${id}`, { method: 'DELETE' });
+      } catch (e) {
+        showError('Silinemedi: ' + e.message);
+        loadTodos();
+      }
     }
 
-    function clearDone() {
+    async function clearDone() {
+      const doneIds = todos.filter(t => t.done).map(t => t.id);
+      if (!doneIds.length) return;
       todos = todos.filter(t => !t.done);
-      save();
       render();
+      try {
+        await api(`/todos?id=in.(${doneIds.join(',')})`, { method: 'DELETE' });
+      } catch (e) {
+        showError('Silinemedi: ' + e.message);
+        loadTodos();
+      }
     }
 
     function setFilter(f, btn) {
@@ -338,7 +429,7 @@
       if (e.key === 'Enter') addTodo();
     });
 
-    render();
+    loadTodos();
   </script>
 </body>
 </html>
