@@ -403,10 +403,34 @@
       Kullanıcı ID'niz:<br>
       <strong id="new-user-id"></strong>
     </div>
-    <p style="font-size:0.88rem;color:#64748b;margin-bottom:20px;text-align:center">
+    <p style="font-size:0.88rem;color:#64748b;margin-bottom:8px;text-align:center">
       Bu ID ile hesabınızı tanımlayabilirsiniz.
     </p>
+    <p style="font-size:0.85rem;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;color:#92400e;margin-bottom:20px;text-align:center">
+      📧 <strong>E-postanızı onaylayın.</strong><br>
+      Gelen kutunuzdaki onay linkine tıklayın, ardından giriş yapabilirsiniz.
+    </p>
     <button class="btn-primary" onclick="showView('login')">Giriş Yap</button>
+  </div>
+
+  <!-- EMAIL CONFIRMED -->
+  <div data-view="confirmed" class="auth-card">
+    <h1>E-posta Onaylandı!</h1>
+    <p class="subtitle">Hesabınız aktif edildi</p>
+    <p style="font-size:0.88rem;color:#64748b;margin-bottom:20px;text-align:center">
+      Şimdi giriş yapabilirsiniz.
+    </p>
+    <button class="btn-primary" onclick="showView('login')">Giriş Yap</button>
+  </div>
+
+  <!-- LINK EXPIRED -->
+  <div data-view="link-expired" class="auth-card">
+    <h1>Link Süresi Doldu</h1>
+    <p class="subtitle">Onay linki geçersiz veya süresi geçmiş</p>
+    <p style="font-size:0.88rem;color:#64748b;margin-bottom:20px;text-align:center">
+      Yeni bir onay e-postası almak için tekrar kayıt olmayı deneyin veya giriş sayfasına dönün.
+    </p>
+    <button class="btn-primary" onclick="showView('login')">Giriş Sayfasına Dön</button>
   </div>
 
   <!-- APP -->
@@ -722,11 +746,54 @@
     });
 
     // ── INIT ─────────────────────────────────────────────────
-    if (session?.access_token) {
-      initApp().catch(() => { session = null; localStorage.removeItem('session'); showView('login'); });
-    } else {
-      showView('login');
+    function parseHash() {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return null;
+      return Object.fromEntries(hash.split('&').map(p => p.split('=').map(decodeURIComponent)));
     }
+
+    async function init() {
+      const params = parseHash();
+
+      if (params) {
+        // Clear hash from URL without reload
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+
+        if (params.error) {
+          if (params.error_code === 'otp_expired' || params.error === 'access_denied') {
+            showView('link-expired');
+          } else {
+            showView('login');
+            showMsg('login-msg', params.error_description || 'Bir hata oluştu.');
+          }
+          return;
+        }
+
+        if (params.access_token && (params.type === 'signup' || params.type === 'magiclink')) {
+          session = { access_token: params.access_token, user: { id: params.user_id || '' } };
+          // Fetch real user info
+          try {
+            const user = await authApi('/user', {
+              headers: { 'Authorization': `Bearer ${params.access_token}` }
+            });
+            session.user = user;
+            localStorage.setItem('session', JSON.stringify(session));
+            showView('confirmed');
+          } catch (_) {
+            showView('confirmed');
+          }
+          return;
+        }
+      }
+
+      if (session?.access_token) {
+        initApp().catch(() => { session = null; localStorage.removeItem('session'); showView('login'); });
+      } else {
+        showView('login');
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
