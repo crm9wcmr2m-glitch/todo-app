@@ -1,0 +1,31 @@
+{
+  "name": "gun3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "test:e2e": "playwright test tests/e2e.test.js"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testMatch": ["**/tests/unit.test.js"]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://crm9wcmr2m-glitch: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@github.com/crm9wcmr2m-glitch/todo-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/crm9wcmr2m-glitch/todo-app/issues"
+  },
+  "homepage": "https://github.com/crm9wcmr2m-glitch/todo-app#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0"
+  }
+}
